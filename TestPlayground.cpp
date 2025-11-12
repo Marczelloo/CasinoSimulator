@@ -5,6 +5,9 @@
 #include "Rng.h"
 #include <iostream>
 #include <cassert>
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
 
 void testPlayer() {
     std::cout << "\n=== Testing Player ===" << std::endl;
@@ -64,6 +67,12 @@ void testRng() {
         assert(num >= 1 && num <= 100);
     }
 
+    for (int i = 0; i < 10; i++) {
+        double num = rng.randDouble(0.0, 1.0);
+        std::cout << "  " << num << std::endl;
+        assert(num >= 0.0 && num <= 1.0);
+    }
+
     std::cout << "✓ 5 random booleans:" << std::endl;
     for (int i = 0; i < 5; i++) {
         bool result = rng.randBool(0.5);
@@ -99,6 +108,17 @@ void testCasino() {
 }
 
 int main() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     std::cout << "╔════════════════════════════════╗" << std::endl;
     std::cout << "║    TEST PLAYGROUND - START     ║" << std::endl;
     std::cout << "╚════════════════════════════════╝" << std::endl;
@@ -114,6 +134,9 @@ int main() {
         std::cerr << "\n✗ Error occurred: " << e.what() << std::endl;
         return 1;
     }
+
+    RoundUI ui;
+    ui.clear();
 
     // Opcjonalne czyszczenie plików testowych
     std::remove("test_leaderboard.txt");

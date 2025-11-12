@@ -4,8 +4,8 @@
 
 #ifndef KASYNO_CASINO_H
 #define KASYNO_CASINO_H
-#include "Enums.h"
-#include "Game.h"
+#include "Resources/Enums.h"
+#include "Games/Game.h"
 #include "Player.h"
 #include "Rng.h"
 #include "RoundUI.h"
@@ -16,7 +16,6 @@ class Casino {
     Game* game;
     RoundUI ui;
     Rng* random;
-    int bet;
     GameState state;
 public:
     Casino();
@@ -30,6 +29,7 @@ public:
     CreatePlayerResult createPlayer();
     void checkLeaderboard();
     void exitCasino();
+
 };
 
 

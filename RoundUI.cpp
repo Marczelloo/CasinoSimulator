@@ -8,6 +8,7 @@
 #include <ostream>
 #include <algorithm>
 #include <limits>
+#include <bits/this_thread_sleep.h>
 
 RoundUI::RoundUI() {}
 
@@ -122,11 +123,15 @@ void RoundUI::renderSlots(const std::vector<std::string>& symbols) {
 }
 
 void RoundUI::pause(const int ms) {
-    _sleep(ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void RoundUI::clear() {
-    std::cout << "\033[2J\033[1;1H";
+    // temporary soltution
+    // Wydrukuj 50 pustych linii
+    for(int i = 0; i < 50; i++) {
+        std::cout << std::endl;
+    }
 }
 
 void RoundUI::leaderboard(const std::string& title, const std::vector<LeaderboardEntry>& entries) {
@@ -156,6 +161,59 @@ void RoundUI::waitForEnter(const std::string& message) {
     print(message);
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
+
+std::string RoundUI::askInput(const std::string &prompt, const std::vector<std::string> &validInputs) {
+    print(prompt);
+    std::string answer;
+
+    while (true) {
+        std::cout << "> ";
+        if (!std::getline(std::cin, answer)) {
+            std::cout << "\nInput closed\n";
+            return "";
+        }
+
+        answer = trim(answer);
+        if (std::find(validInputs.begin(), validInputs.end(), answer) != validInputs.end()) {
+            return answer;
+        } else {
+            std::cout << "Invalid input. Valid options are: ";
+            for (const auto& input : validInputs) {
+                std::cout << input << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+}
+
+int RoundUI::askInput(const std::string &prompt, int min, int max) {
+    print(prompt);
+    std::string answer;
+
+    while (true) {
+        std::cout << "> ";
+        if (!std::getline(std::cin, answer)) {
+            std::cout << "\nInput closed\n";
+            return -1;
+        }
+
+        answer = trim(answer);
+        try {
+            int value = std::stoi(answer);
+            if (value >= min && value <= max) {
+                return value;
+            } else {
+                std::cout << "Input must be between " << min << " and " << max << std::endl;
+            }
+        } catch (const std::invalid_argument& e) {
+            std::cout << "Invalid input. Please enter a number." << std::endl;
+        } catch (const std::out_of_range& e) {
+            std::cout << "Input out of range. Please enter a valid number." << std::endl;
+        }
+    }
+}
+
+
 
 
 

@@ -10,15 +10,21 @@
 class Player {
     std::string name;
     int balance;
+    int winnings;
+    int currentBet;
 public:
     Player();
     Player(const std::string& name,const int& balance);
 
     std::string getName() const;
     int getBalance() const;
+    int getWinnings() const;
+    int getCurrentBet() const;
 
     void setName(const std::string& newName);
     void setBalance(const int& newBalance);
+    void setWinnings(const int& newWinnings);
+    void setCurrentBet(const int& newBet);
 
     void updateBalance(const int& amount);
 };

@@ -33,4 +33,28 @@ enum class CasinoOptions {
     CASINO_EXIT,
 };
 
+enum class GameMenuOptions {
+    GAME_PLAY_SLOTS = 0,
+    GAME_PLAY_ROULETTE,
+    GAME_PLAY_BLACKJACK,
+    GAME_RETURN_TO_CASINO_MENU,
+    GAME_EXIT,
+};
+
+enum class BetOptions {
+    BET_ALL_IN = 0,
+    BET_HALF,
+    BET_QUARTER,
+    BET_CUSTOM,
+};
+
+enum class AfterGameOptions {
+    AFTER_PLAY_ANOTHER_ROUND = 0,
+    AFTER_CHANGE_BET_AND_PLAY_ANOTHER_ROUND,
+    AFTER_PLAY_ANOTHER_GAME,
+    AFTER_RETURN_TO_GAME_MENU,
+    AFTER_RETURN_TO_CASINO_MENU,
+    AFTER_EXIT,
+};
+
 #endif //KASYNO_ENUMS_H

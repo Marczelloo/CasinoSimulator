@@ -1,0 +1,69 @@
+//
+// Created by moskw on 08.10.2025.
+//
+
+#ifndef KASYNO_GAME_H
+#define KASYNO_GAME_H
+#include <string>
+
+#include "../Player.h"
+#include "../Rng.h"
+#include "../RoundUI.h"
+#include "../Resources/Enums.h"
+#include "../Resources/TextRes.h"
+
+//GAME_MENU -> PETLA GRY -> GAME_MENU
+// rzeczy ktore byly w funkcji handle game play implementowac w play round
+// bettowanie jest obslugiwane w grach wraz z mozliwoscia nadpisania (slots np dla wartosci 10, 20, 50 itp)
+// po zakonczeniu rundy gra zwraca GameState ktory kasyno interpretuje i decyduje co dalej
+// w grze mamy menu z opcjami gry, akcji gry, zmiany bettu, wybrania innej gry wyjscia itp
+// w slotsach np mozna dac opcje szybkiego bettowania 10, 20, 50 itp
+// w slotsach chce rowniez dodac zmiane ilosci lini i kolumn
+// w slotsach i ruletce sprobwac dodac animacje podczas rundy
+// w ruletce mozna dac opcje obstawiania na kolory, parzyste itp
+// w blackjacku mozna dac opcje double down, split itp
+// kazda gra ma swoj unikalny zestaw opcji ktore sa dostepne w trakcie rundy
+
+class Game {
+protected:
+    std::string name;
+    Rng* random;
+    RoundUI ui;
+
+    virtual int askForBet(int maxBalance) {
+        if (maxBalance <= 0) {
+            ui.print("No balance avaiable");
+            return 0;
+        }
+
+        int choice = ui.askChoice(TextRes::BET_SELECT_TITLE, TextRes::BET_SELECT_OPTIONS);
+
+        switch (static_cast<BetOptions>(choice)) {
+            case BetOptions::BET_ALL_IN:
+                return maxBalance;
+            case BetOptions::BET_HALF:
+                return maxBalance / 2;
+            case BetOptions::BET_QUARTER:
+                return maxBalance / 4;
+            case BetOptions::BET_CUSTOM: {
+                int bet = ui.askInput("Enter your bet amount (1 - " + std::to_string(maxBalance) + "): ", 1, maxBalance);
+                return (bet > 0 && bet <= maxBalance) ? bet : maxBalance;
+            }
+            default:
+                ui.print("Invalid choice, defaulting to custom amount!");
+                int bet = ui.askInput("Enter your bet amount (1 - " + std::to_string(maxBalance) + "): ", 1, maxBalance);
+                return (bet > 0 && bet <= maxBalance) ? bet : maxBalance;
+        }
+    }
+public:
+    Game(const std::string& gameName, Rng* rng): name(gameName), random(rng) {}
+
+    virtual ~Game() = default;
+
+    virtual GameState playRound(const Player& player) = 0;
+
+    std::string getName() const { return name; };
+};
+
+
+#endif //KASYNO_GAME_H
