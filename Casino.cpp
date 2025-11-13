@@ -60,6 +60,7 @@ void Casino::run() {
 }
 
 GameState Casino::handleMainMenu() {
+    ui.clear();
     int option = ui.askChoice(TextRes::MAIN_MENU_TITLE, TextRes::MAIN_MENU_OPTIONS);
 
     switch (static_cast<MainMenuOptions>(option)) {
@@ -110,6 +111,7 @@ CreatePlayerResult Casino::createPlayer() {
 }
 
 void Casino::checkLeaderboard() {
+    ui.clear();
     auto entries = FileHandler::loadLeaderboard("leaderboard.txt");
 
     if (entries.empty()) ui.print("Leaderboard is empty.");
@@ -139,6 +141,7 @@ void Casino::exitCasino() {
 }
 
 GameState Casino::handleCasinoMenu() {
+    ui.clear();
     int option = ui.askChoice(TextRes::CASINO_TITLE, TextRes::CASINO_OPTIONS);
 
     switch (static_cast<CasinoOptions>(option)) {
@@ -159,6 +162,7 @@ GameState Casino::handleCasinoMenu() {
 }
 
 GameState Casino::handleGameMenu() {
+    ui.clear();
     int option = ui.askChoice(TextRes::GAME_SELECT_TITLE, TextRes::GAME_SELECT_OPTIONS);
 
     switch (static_cast<GameMenuOptions>(option)) {

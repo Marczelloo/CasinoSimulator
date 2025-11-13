@@ -57,4 +57,29 @@ enum class AfterGameOptions {
     AFTER_EXIT,
 };
 
+enum class SlotsOptions {
+    SPIN = 0,
+    CHANGE_BET,
+    EXIT_TO_GAME_MENU,
+    EXIT,
+};
+
+enum class SlotsBetOptions {
+    BET_10 = 0,
+    BET_20,
+    BET_50,
+    BET_100,
+    BET_200,
+    BET_500,
+};
+
+enum class SlotsIcon {
+    CHERRY = 0,
+    LEMON,
+    BELL,
+    STAR,
+    CLOVER,
+    SEVEN,
+};
+
 #endif //KASYNO_ENUMS_H

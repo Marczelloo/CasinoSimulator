@@ -47,19 +47,21 @@ namespace TextRes {
         "Custom amount"
     };
 
-    constexpr const char* AFTER_GAME_TITLE = "WHAT WOULD YOU LIKE TO DO NEXT?";
-
-    const std::vector<std::string> AFTER_GAME_OPTIONS = {
-        "Play another round",
-        "Change bet",
-        "Play another game",
-        "Return to Game Menu",
-        "Return to Casino Menu",
+    const std::vector<std::string> SLOTS_GAME_OPTIONS = {
+        "Spin",
+        "Change Bet",
+        "Exit to Game Menu",
         "Exit"
     };
 
+    constexpr const char* SLOTS_BET_OPTIONS_TITLE = "SELECT YOUR SLOTS BET";
+
+    const std::vector<std::string> SLOTS_BET_OPTIONS = {
+        "10$", "20$", "50$", "100$", "200$", "500$"
+    };
+
     const std::vector<std::string> SLOT_SYMBOLS = {
-        "🍒", "🍋", "🔔", "⭐", "7️⃣", "🍀"
+        "🍒", "🍋", "🔔", "⭐", "🍀", "7️⃣"
     };
 }
 

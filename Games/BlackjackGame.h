@@ -9,7 +9,8 @@
 class BlackjackGame: public Game {
 public:
     BlackjackGame(Rng* rng): Game("Blackjack", rng) {};
-    GameState playRound(const Player& player) override;
+    ~BlackjackGame();
+    GameState playRound(Player& player) override;
 };
 
 

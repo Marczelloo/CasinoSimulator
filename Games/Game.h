@@ -13,6 +13,10 @@
 #include "../Resources/TextRes.h"
 
 //GAME_MENU -> PETLA GRY -> GAME_MENU
+// playRound -> ask for bet -> game loop przerywany tylko koncem srodkow albo wybraniem opcji exit, return to main menu
+// | interfejs gry|
+// menu opcji gry (zmiana bettu, wyjscie do menu gry itp)
+
 // rzeczy ktore byly w funkcji handle game play implementowac w play round
 // bettowanie jest obslugiwane w grach wraz z mozliwoscia nadpisania (slots np dla wartosci 10, 20, 50 itp)
 // po zakonczeniu rundy gra zwraca GameState ktory kasyno interpretuje i decyduje co dalej
@@ -29,6 +33,7 @@ protected:
     std::string name;
     Rng* random;
     RoundUI ui;
+    bool exit = false;
 
     virtual int askForBet(int maxBalance) {
         if (maxBalance <= 0) {
@@ -55,12 +60,29 @@ protected:
                 return (bet > 0 && bet <= maxBalance) ? bet : maxBalance;
         }
     }
+
+    virtual int renderInterface(const Player& player) {
+        ui.clear();
+        ui.print("=== " + name + " GAME ===");
+        ui.print("Current Player: " + player.getName());
+        ui.print("Current Balance: " + std::to_string(player.getBalance()));
+        ui.print("Current Bet: " + std::to_string(player.getCurrentBet()));
+        ui.print("-----------------------");
+
+        int option = ui.askChoice("Select an option:", {
+            "Play Round",
+            "Change Bet",
+            "Exit to Game Menu",
+            "Exit Casino"
+        });
+
+        return option;
+    }
 public:
     Game(const std::string& gameName, Rng* rng): name(gameName), random(rng) {}
-
     virtual ~Game() = default;
 
-    virtual GameState playRound(const Player& player) = 0;
+    virtual GameState playRound(Player& player) = 0;
 
     std::string getName() const { return name; };
 };

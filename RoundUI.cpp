@@ -111,15 +111,12 @@ std::string RoundUI::ask(const std::string &prompt) {
 
 
 void RoundUI::renderSlots(const std::vector<std::string>& symbols) {
-    clear();
     std::cout << "====================" << std::endl;
     std:: cout << "|";
-    for (int i = 0; i < static_cast<int>(symbols.size()), i++;) {
+    for (int i = 0; i < static_cast<int>(symbols.size()); i++) {
         std::cout << " " << symbols[i] << " " << "|";
     }
     std::cout << "====================" << std::endl;
-    std::cout << std::flush;
-    pause(20);
 }
 
 void RoundUI::pause(const int ms) {
@@ -127,11 +124,11 @@ void RoundUI::pause(const int ms) {
 }
 
 void RoundUI::clear() {
-    // temporary soltution
-    // Wydrukuj 50 pustych linii
-    for(int i = 0; i < 50; i++) {
-        std::cout << std::endl;
-    }
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
 }
 
 void RoundUI::leaderboard(const std::string& title, const std::vector<LeaderboardEntry>& entries) {

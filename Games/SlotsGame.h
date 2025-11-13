@@ -5,14 +5,21 @@
 #ifndef KASYNO_SLOTSGAME_H
 #define KASYNO_SLOTSGAME_H
 #include "Game.h"
+#include <array>
 
 class SlotsGame: public Game {
 private:
-    int spinSlots();
-    void displayResult(int slot1, int slot2, int slot3);
+    int askForBet(int maxBalance) override;
+    std::array<int, 3> slots = {-1, -1, -1};
+    std::array<int, 3> spinSlots();
+    int renderInterface(const Player& player) override;
+    int calculateScore(const std::array<int, 3>& slots, const int bet);
+    const int tripletPayouts[6] = {3, 5, 10, 20, 50, 100}; // Cherry...Seven
+    const int pairPayouts[6] = {1, 1, 2, 2, 3, 5};
 public:
     SlotsGame(Rng* rng): Game("Slots", rng) {};
-    GameState playRound(const Player& player) override;
+    ~SlotsGame();
+    GameState playRound(Player& player) override;
 };
 
 

@@ -10,7 +10,8 @@ class RouletteGame: public Game {
 
 public:
     RouletteGame(Rng* rng): Game("Roulette", rng) {};
-    GameState playRound(const Player& player) override;
+    ~RouletteGame();
+    GameState playRound(Player& player) override;
 };
 
 
