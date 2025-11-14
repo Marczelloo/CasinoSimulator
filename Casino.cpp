@@ -85,6 +85,24 @@ GameState Casino::handleMainMenu() {
 CreatePlayerResult Casino::createPlayer() {
     const std::string name = ui.ask("Enter your name: ");
 
+    if (name.empty()) {
+        std::vector<std::string> errorInfo;
+        errorInfo.push_back("Name cannot be empty!");
+        ui.drawBox("ERROR", errorInfo);
+        ui.waitForEnter();
+        return CreatePlayerResult::Retry;
+    }
+
+    if (FileHandler::playerExists(name)) {
+        std::vector<std::string> errorInfo;
+        errorInfo.push_back("Player '" + name + "' already exists!");
+        errorInfo.push_back("");
+        errorInfo.push_back("Please choose a different name.");
+        ui.drawBox("ERROR", errorInfo);
+        ui.waitForEnter();
+        return CreatePlayerResult::Retry;
+    }
+
     const int minBalance = 500;
     const int maxBalance = 2000;
 
@@ -103,9 +121,14 @@ CreatePlayerResult Casino::createPlayer() {
         return CreatePlayerResult::Retry;
     }
 
-    ui.print("Player created successfully!");
-    ui.print("Name: " + player->getName());
-    ui.print("Balance: " + std::to_string(player->getBalance()));
+    std::vector<std::string> successInfo;
+    successInfo.push_back("Player created successfully!");
+    successInfo.push_back("");
+    successInfo.push_back("Name: " + player->getName());
+    successInfo.push_back("Balance: " + std::to_string(player->getBalance()));
+
+    ui.drawBox("SUCCESS", successInfo);
+    ui.waitForEnter();
 
     return CreatePlayerResult::Ok;
 }
@@ -114,8 +137,7 @@ void Casino::checkLeaderboard() {
     ui.clear();
     auto entries = FileHandler::loadLeaderboard("leaderboard.txt");
 
-    if (entries.empty()) ui.print("Leaderboard is empty.");
-    else ui.leaderboard(TextRes::LEADERBOARD_TITLE, entries);
+    ui.leaderboard(TextRes::LEADERBOARD_TITLE, entries);
 
     ui.waitForEnter("Press ENTER to return");
 
@@ -188,94 +210,4 @@ GameState Casino::handleGameMenu() {
             return GameState::CASINO_MENU;
     }
 }
-
-// GameState Casino::handleGamePlay() {
-//     if (game == nullptr || player == nullptr) {
-//         ui.print("Error: Game or player not initialized");
-//         return GameState::EXIT;
-//     }
-//
-//     if (player->getCurrentBet() <= 0 || changeBet) {
-//         int newBet = handleBetMenu(player->getBalance());
-//
-//         if (newBet <= 0 || newBet > player->getBalance()) {
-//             ui.print("Error: Invalid bet amount, returning to Casino Menu.");
-//             return GameState::PLAYING;
-//         }
-//
-//         player->setCurrentBet(newBet);
-//         changeBet = false;
-//     }
-//
-//     player->updateBalance(-player->getCurrentBet());
-//
-//     game->playRound(*player, player->getCurrentBet());
-//
-//     if (player->getBalance() <= 0) {
-//         ui.print("You have run out of balance! Returning to Casino Menu.");
-//         player->setCurrentBet(0);
-//         return GameState::CASINO_MENU;
-//     }
-//
-//     int option = ui.askChoice(TextRes::AFTER_GAME_TITLE, TextRes::AFTER_GAME_OPTIONS);
-//
-//     switch (static_cast<AfterGameOptions>(option)) {
-//         case AfterGameOptions::AFTER_PLAY_ANOTHER_ROUND:
-//             return GameState::PLAYING;
-//         case AfterGameOptions::AFTER_CHANGE_BET_AND_PLAY_ANOTHER_ROUND:
-//             changeBet = true;
-//             return GameState::PLAYING;
-//         case AfterGameOptions::AFTER_PLAY_ANOTHER_GAME:
-//         case AfterGameOptions::AFTER_RETURN_TO_GAME_MENU:
-//             player->setCurrentBet(0);
-//             return GameState::GAME_MENU;
-//         case AfterGameOptions::AFTER_RETURN_TO_CASINO_MENU:
-//             player->setCurrentBet(0);
-//             return GameState::CASINO_MENU;
-//         case AfterGameOptions::AFTER_EXIT:
-//             exitCasino();
-//             return GameState::EXIT;
-//         default:
-//             ui.print("Invalid choice, returning to Casino Menu");
-//             player->setCurrentBet(0);
-//             return GameState::CASINO_MENU;
-//     }
-// }
-// int Casino::handleBetMenu(int currentBalance) {
-//     int betAmount = 0;
-//
-//     ui.print(TextRes::BET_SELECT_TITLE);
-//     ui.print("Current balance: " + std::to_string(player->getBalance()));
-//     int option = ui.askChoice(TextRes::BET_SELECT_TITLE, TextRes::BET_SELECT_OPTIONS);
-//
-//     switch (static_cast<BetOptions>(option)) {
-//         case BetOptions::BET_ALL_IN:
-//             betAmount = currentBalance;
-//             break;
-//         case BetOptions::BET_HALF:
-//             betAmount = currentBalance / 2;
-//             break;
-//         case BetOptions::BET_QUARTER:
-//             betAmount = currentBalance / 4;
-//             break;
-//         case BetOptions::BET_CUSTOM:
-//             betAmount = ui.askInput("Please enter your bet amount: ", 1, currentBalance);
-//             break;
-//         default:
-//             ui.print("Invalid choice, defaulting to custom amount!");
-//             break;
-//     }
-//
-//     if (betAmount <= 0) {
-//         ui.print("Invalid bet amount, setting to 1");
-//         betAmount = 1;
-//     } else if (betAmount > currentBalance) {
-//         ui.print("Bet amount exceeds current balance, setting to max balance");
-//         betAmount = currentBalance;
-//     }
-//
-//     ui.print("Your bet is set to: " + std::to_string(betAmount));
-//
-//     return betAmount;
-// }
 
