@@ -7,8 +7,14 @@
 #include "Game.h"
 
 class BlackjackGame: public Game {
+    int askForBet(int maxBalance) override;
+    int renderInterface(const Player& player) override;
+    int calculateScore(int bet);
+    void displayPayouts() const override;
+    void animateRound(const Player& player);
+
 public:
-    BlackjackGame(Rng* rng): Game("Blackjack", rng) {};
+    BlackjackGame(Rng &rng);
     ~BlackjackGame();
     GameState playRound(Player& player) override;
 };

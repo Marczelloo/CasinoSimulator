@@ -10,6 +10,7 @@
 #include "Games/RouletteGame.h"
 #include "Games/SlotsGame.h"
 #include "Resources/TextRes.h"
+#include "ExitHelper.h"
 
 Casino::Casino() {
     random = new Rng();
@@ -52,11 +53,6 @@ void Casino::run() {
                 break;
         }
     }
-
-    if (player != nullptr) {
-        LeaderboardEntry entry{player->getName(), player->getBalance()};
-        FileHandler::addEntry(entry);
-    }
 }
 
 GameState Casino::handleMainMenu() {
@@ -87,7 +83,7 @@ CreatePlayerResult Casino::createPlayer() {
 
     if (name.empty()) {
         std::vector<std::string> errorInfo;
-        errorInfo.push_back("Name cannot be empty!");
+        errorInfo.emplace_back("Name cannot be empty!");
         ui.drawBox("ERROR", errorInfo);
         ui.waitForEnter();
         return CreatePlayerResult::Retry;
@@ -95,9 +91,9 @@ CreatePlayerResult Casino::createPlayer() {
 
     if (FileHandler::playerExists(name)) {
         std::vector<std::string> errorInfo;
-        errorInfo.push_back("Player '" + name + "' already exists!");
-        errorInfo.push_back("");
-        errorInfo.push_back("Please choose a different name.");
+        errorInfo.emplace_back("Player '" + name + "' already exists!");
+        errorInfo.emplace_back("");
+        errorInfo.emplace_back("Please choose a different name.");
         ui.drawBox("ERROR", errorInfo);
         ui.waitForEnter();
         return CreatePlayerResult::Retry;
@@ -122,10 +118,10 @@ CreatePlayerResult Casino::createPlayer() {
     }
 
     std::vector<std::string> successInfo;
-    successInfo.push_back("Player created successfully!");
-    successInfo.push_back("");
-    successInfo.push_back("Name: " + player->getName());
-    successInfo.push_back("Balance: " + std::to_string(player->getBalance()));
+    successInfo.emplace_back("Player created successfully!");
+    successInfo.emplace_back("");
+    successInfo.emplace_back("Name: " + player->getName());
+    successInfo.emplace_back("Balance: " + std::to_string(player->getBalance()));
 
     ui.drawBox("SUCCESS", successInfo);
     ui.waitForEnter();
@@ -147,23 +143,18 @@ void Casino::checkLeaderboard() {
 void Casino::exitCasino() {
     if (state == GameState::EXIT) return;
 
-    const int response = ui.askChoice("Are you sure you want to exit the casino?", {"Yes", "No"});
-
-    if (response != 0) {
-        ui.print("Exit cancelled.");
+    if (player == nullptr) {
+        state = GameState::EXIT;
         return;
     }
 
-    ui.print("Exiting...");
-
-    if (player != nullptr) {
-        LeaderboardEntry entry{player->getName(), player->getBalance()};
-        FileHandler::addEntry(entry);
+    if (confirmExitAndSave(ui, *player)) {
+        state = GameState::EXIT;
     }
 }
 
 GameState Casino::handleCasinoMenu() {
-    ui.clear();
+    RoundUI::clear();
     int option = ui.askChoice(TextRes::CASINO_TITLE, TextRes::CASINO_OPTIONS);
 
     switch (static_cast<CasinoOptions>(option)) {
@@ -184,21 +175,21 @@ GameState Casino::handleCasinoMenu() {
 }
 
 GameState Casino::handleGameMenu() {
-    ui.clear();
+    RoundUI::clear();
     int option = ui.askChoice(TextRes::GAME_SELECT_TITLE, TextRes::GAME_SELECT_OPTIONS);
 
     switch (static_cast<GameMenuOptions>(option)) {
         case GameMenuOptions::GAME_PLAY_SLOTS:
             if (game != nullptr) delete game;
-            game = new SlotsGame(random);
+            game = new SlotsGame(*random);
             return game->playRound(*player);
         case GameMenuOptions::GAME_PLAY_ROULETTE:
             if (game != nullptr) delete game;
-            game = new RouletteGame(random);
+            game = new RouletteGame(*random);
             return game->playRound(*player);
         case GameMenuOptions::GAME_PLAY_BLACKJACK:
             if (game != nullptr) delete game;
-            game = new BlackjackGame(random);
+            game = new BlackjackGame(*random);
             return game->playRound(*player);
         case GameMenuOptions::GAME_RETURN_TO_CASINO_MENU:
             return GameState::CASINO_MENU;

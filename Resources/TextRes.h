@@ -72,6 +72,19 @@ namespace TextRes {
         "Exit to Game Menu",
         "Exit"
     };
+
+    constexpr const char* ROULETTE_BET_OPTIONS_TITLE = "SELECT YOUR ROULETTE BET";
+
+    const std::vector<std::string> ROULETTE_BET_TYPES = {
+        "Red",
+        "Black",
+        "Green (0)",
+        "Specific Number (0-36)",
+        "Odd",
+        "Even",
+        "Low (1-18)",
+        "High (19-36)"
+    };
 }
 
 #endif //KASYNO_TEXTRES_H

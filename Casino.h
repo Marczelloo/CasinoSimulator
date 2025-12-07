@@ -15,7 +15,7 @@ class Casino {
     Player* player;
     Game* game;
     RoundUI ui;
-    Rng* random;
+    Rng *random;
     GameState state;
 public:
     Casino();

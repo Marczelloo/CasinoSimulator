@@ -22,9 +22,13 @@ class RouletteGame: public Game {
 private:
     int askForBet(int maxBalance) override;
     int renderInterface(const Player& player) override;
-    int calculateScore();
+    int calculateScore(int selectedTile,int bet);
     void displayPayouts() const override;
-    int lastScore = -1;
+    void animateSpin(const Player& player, int resultIndex);
+
+    int lastScore;
+    RouletteBetType betType;
+    int betNumber;
     std::string errorMessage;
 
     std::vector<RouletteTile> initWheel();
@@ -33,11 +37,11 @@ private:
 
     std::vector<RouletteTile> wheel;
     std::vector<RouletteTile> prevTiles;
-    int spunTile = 0;
+    int spunTile;
 
 
 public:
-    RouletteGame(Rng* rng);
+    RouletteGame(Rng &rng);
     ~RouletteGame();
     GameState playRound(Player& player) override;
 };

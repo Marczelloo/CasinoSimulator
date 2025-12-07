@@ -12,9 +12,9 @@ private:
     int askForBet(int maxBalance) override;
     std::array<int, 3> spinSlots();
     int renderInterface(const Player& player) override;
-    int calculateScore(const std::array<int, 3>& slots, const int bet);
+    int calculateScore(const std::array<int, 3>& slots, int bet);
     void displayPayouts() const override;
-    void animateSpin(Player& player, const std::array<int, 3>& finalSlots);
+    void animateSpin(const Player& player, const std::array<int, 3>& finalSlots);
 
     std::array<int, 3> slots = {-1, -1, -1};
     int lastScore = -1;
@@ -22,7 +22,7 @@ private:
     const int tripletPayouts[6] = {3, 5, 10, 20, 50, 100};
     const int pairPayouts[6] = {1, 1, 2, 2, 3, 5};
 public:
-    SlotsGame(Rng* rng): Game("Slots", rng) {};
+    SlotsGame(Rng &rng);
     ~SlotsGame();
     GameState playRound(Player& player) override;
 };

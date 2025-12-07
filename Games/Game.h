@@ -31,7 +31,7 @@
 class Game {
 protected:
     std::string name;
-    Rng* random;
+    Rng& random;
     RoundUI ui;
     bool exit = false;
 
@@ -85,7 +85,7 @@ protected:
         ui.waitForEnter("Press ENTER to return");
     }
 public:
-    Game(const std::string& gameName, Rng* rng): name(gameName), random(rng) {}
+    Game(const std::string& gameName, Rng& rng): name(gameName), random(rng) {}
     virtual ~Game() = default;
 
     virtual GameState playRound(Player& player) = 0;

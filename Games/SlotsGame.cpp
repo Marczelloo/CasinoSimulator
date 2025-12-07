@@ -4,10 +4,14 @@
 
 #include "SlotsGame.h"
 
+#include "../ExitHelper.h"
+
+SlotsGame::SlotsGame(Rng &rng): Game("Slots", rng) {};
+
 SlotsGame::~SlotsGame() = default;
 
 int SlotsGame::askForBet(int maxBalance) {
-    ui.clear();
+    RoundUI::clear();
     ui.print("Your current balance is: " + std::to_string(maxBalance));
 
     if (maxBalance < 10) {
@@ -52,11 +56,6 @@ int SlotsGame::askForBet(int maxBalance) {
         return askForBet(maxBalance);
     }
 
-    if (newBet > maxBalance) {
-        ui.print("Invalid choice, defaulting to custom amount!");
-        newBet = 10;
-    }
-
     return newBet;
 }
 
@@ -77,15 +76,22 @@ int SlotsGame::renderInterface(const Player& player) {
     ui.renderSlots(slotSymbols);
 
     std::vector<std::string> info;
-    info.push_back(player.getName() + "'s Balance: " + std::to_string(player.getBalance()));
-    info.push_back("Current bet: " + std::to_string(player.getCurrentBet()));
+    info.emplace_back(player.getName() + "'s Balance: " + std::to_string(player.getBalance()));
+    info.emplace_back("Current bet: " + std::to_string(player.getCurrentBet()));
     if (lastScore >= 0) {
         if (lastScore > 0) {
-            info.push_back("You won " + std::to_string(lastScore) + "!");
+            info.emplace_back("You won " + std::to_string(lastScore) + "!");
         } else {
-            info.push_back("No win this time. Better luck next spin!");
+            info.emplace_back("No win this time. Better luck next spin!");
         }
     }
+
+    if (!errorMessage.empty()) {
+        info.emplace_back("");
+        info.emplace_back("Error: " + errorMessage);
+        errorMessage.clear();
+    }
+
     ui.drawBox("", info);
 
     int option = ui.askChoice("What would you like to do?",
@@ -96,7 +102,7 @@ int SlotsGame::renderInterface(const Player& player) {
 
 std::array<int, 3> SlotsGame::spinSlots() {
     auto getSymbol = [this]() {
-        int chance = random->randInt(1, 100);
+        int chance = random.randInt(1, 100);
         return (chance <= 40) ? 0 : (chance <= 70) ? 1 : (chance <= 85) ? 2 :
                (chance <= 95) ? 3 : (chance <= 99) ? 4 : 5;
     };
@@ -104,7 +110,7 @@ std::array<int, 3> SlotsGame::spinSlots() {
     return {getSymbol(), getSymbol(), getSymbol()};
 }
 
-int SlotsGame::calculateScore(const std::array<int, 3>& slots,const int bet) {
+int SlotsGame::calculateScore(const std::array<int, 3>& slots, const int bet) {
     if (slots[0] == slots[1] && slots[1] == slots[2]) {
         return bet * tripletPayouts[slots[0]];
     }
@@ -173,15 +179,18 @@ GameState SlotsGame::playRound(Player &player) {
             case SlotsOptions::VIEW_PAYOUTS:
                 displayPayouts();
                 break;
-            case SlotsOptions::EXIT_TO_GAME_MENU:
-            case SlotsOptions::EXIT: {
-                LeaderboardEntry entry{player.getName(), player.getBalance()};
-                FileHandler::addEntry(entry);
-
+            case SlotsOptions::EXIT_TO_GAME_MENU: {
                 exit = true;
-
-                newState = (option == static_cast<int>(SlotsOptions::EXIT_TO_GAME_MENU)) ?
-                             GameState::GAME_MENU : GameState::EXIT;
+                newState = GameState::GAME_MENU;
+                break;
+            }
+            case SlotsOptions::EXIT: {
+                if (confirmExitAndSave(ui, player)) {
+                    exit = true;
+                    newState = GameState::EXIT;
+                } else {
+                    errorMessage = "Exit cancelled.";
+                }
                 break;
             }
             default:
@@ -197,36 +206,36 @@ void SlotsGame::displayPayouts() const {
     ui.clear();
 
     std::vector<std::string> payoutInfo;
-    payoutInfo.push_back("=== PAYOUTS TABLE ===");
-    payoutInfo.push_back("");
-    payoutInfo.push_back("THREE OF A KIND:");
+    payoutInfo.emplace_back("=== PAYOUTS TABLE ===");
+    payoutInfo.emplace_back("");
+    payoutInfo.emplace_back("THREE OF A KIND:");
 
     for (size_t i = 0; i < TextRes::SLOT_SYMBOLS.size(); ++i) {
         std::string symbol = TextRes::SLOT_SYMBOLS[i];
         std::string line = symbol + " " + symbol + " " + symbol +
                           "  ->  x" + std::to_string(tripletPayouts[i]);
-        payoutInfo.push_back(line);
+        payoutInfo.emplace_back(line);
     }
 
-    payoutInfo.push_back("");
-    payoutInfo.push_back("TWO OF A KIND:");
+    payoutInfo.emplace_back("");
+    payoutInfo.emplace_back("TWO OF A KIND:");
 
     for (size_t i = 0; i < TextRes::SLOT_SYMBOLS.size(); ++i) {
         std::string symbol = TextRes::SLOT_SYMBOLS[i];
         std::string line = symbol + " " + symbol + " ?  ->  x" +
                           std::to_string(pairPayouts[i]);
-        payoutInfo.push_back(line);
+        payoutInfo.emplace_back(line);
     }
 
     ui.drawBox("", payoutInfo);
     ui.waitForEnter("Press ENTER to return");
 }
 
-void SlotsGame::animateSpin(Player& player, const std::array<int, 3>& finalSlots) {
+void SlotsGame::animateSpin(const Player& player, const std::array<int, 3>& finalSlots) {
     std::array<int, 3> spinCounts = {
-        random->randInt(10, 20),
-        random->randInt(15, 25),
-        random->randInt(20, 30)
+        random.randInt(10, 20),
+        random.randInt(15, 25),
+        random.randInt(20, 30)
     };
 
     int maxSpins = std::max(spinCounts[0], std::max(spinCounts[1], spinCounts[2]));
@@ -236,7 +245,7 @@ void SlotsGame::animateSpin(Player& player, const std::array<int, 3>& finalSlots
 
         for (int i = 0; i < 3; ++i) {
             if (spin < spinCounts[i]) {
-                currentSlots[i] = random->randInt(0, (int)TextRes::SLOT_SYMBOLS.size() - 1);
+                currentSlots[i] = random.randInt(0, (int)TextRes::SLOT_SYMBOLS.size() - 1);
             } else {
                 currentSlots[i] = finalSlots[i];
             }
@@ -251,9 +260,9 @@ void SlotsGame::animateSpin(Player& player, const std::array<int, 3>& finalSlots
         ui.renderSlots(displaySymbols);
 
         std::vector<std::string> info;
-        info.push_back(player.getName() + "'s Balance: " + std::to_string(player.getBalance()));
-        info.push_back("Current bet: " + std::to_string(player.getCurrentBet()));
-        info.push_back("SPINNING...");
+        info.emplace_back(player.getName() + "'s Balance: " + std::to_string(player.getBalance()));
+        info.emplace_back("Current bet: " + std::to_string(player.getCurrentBet()));
+        info.emplace_back("SPINNING...");
         ui.drawBox("", info);
 
         int delay = 50 + (spin * 10); // ms

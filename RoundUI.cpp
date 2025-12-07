@@ -49,7 +49,7 @@ static const std::unordered_map<std::string, std::string> ansiMap = {
     {"bg_cyan","46"},{"bg_white","47"}
 };
 
-static std::string colorize(const std::string& text, const std::string& fg= "", const std::string& bg = "", bool bold = false) {
+std::string RoundUI::colorize(const std::string& text, const std::string& fg= "", const std::string& bg = "", bool bold = false) {
     std::string seq;
     if (bold) seq += ansiMap.at("bold") + ";";
     if (!fg.empty() &&  ansiMap.count(fg)) seq += ansiMap.at(fg) + ";";
@@ -380,39 +380,129 @@ void RoundUI::renderSlots(const std::vector<std::string>& symbols) {
     std::cout << centeredLine(bottom) << "\n";
 }
 
-void RoundUI::renderWheel(const std::vector<RouletteTile> &wheel, const int &spunTile) {
+void RoundUI::renderWheel(const std::vector<RouletteTile>& wheel, const int& spunTile) {
     enableAnsiColors();
     clear();
 
     int termWidth = consoleWidth();
-    if (termWidth < 20) termWidth = 80;
+    if (termWidth < 40) termWidth = 80;
 
     int n = static_cast<int>(wheel.size());
+    if (n == 0 || spunTile < 0) return;
+
+    // ===== build colored row with 4 tiles before and after center =====
     std::string row;
 
-    row += "|   ";
     for (int offset = -4; offset <= 4; ++offset) {
         int idx = (spunTile + offset + n) % n;
         const auto& tile = wheel[idx];
+        bool isCenter = (offset == 0);
 
         std::string num = std::to_string(tile.number);
-        std::string colored;
+        if (num.size() == 1) num = " " + num;
 
+        std::string colored;
         if (tile.color == RouletteTileType::RED) {
-            colored = colorize(" " + num + " ", "white", "red", idx == spunTile ? true : false);
+            colored = colorize(" " + num + " ", "white", "red", isCenter);
         } else if (tile.color == RouletteTileType::BLACK) {
-            colored = colorize(" " + num + " ", "white", "black", idx == spunTile ? true : false);
+            colored = colorize(" " + num + " ", "white", "black", isCenter);
         } else {
-            colored = colorize(" " + num + " ", "black", "green", idx == spunTile ? true : false);
+            colored = colorize(" " + num + " ", "black", "green", isCenter);
         }
 
-        if (!row.empty() && offset != 4) row += "|";
+        if (isCenter) {
+            colored = ">" + colored + "<";
+        }
+
+        if (!row.empty()) row += " ";
         row += colored;
     }
-    row += "   |";
 
-    std::cout << centerText(row, termWidth) << std::endl;
+    std::string pointer = "▼";
+
+    // ===== szerokości liczone BEZ ANSI =====
+    std::string rowPlain = stripAnsi(row);
+
+    int innerWidth = std::max(
+        displayWidthUtf8(rowPlain),
+        displayWidthUtf8(pointer)
+    );
+
+    int boxWidth = innerWidth + 4;
+    int leftPad  = std::max(0, (termWidth - boxWidth) / 2);
+    std::string indent(leftPad, ' ');
+
+    std::string top    = "+" + std::string(innerWidth + 2, '-') + "+";
+    std::string bottom = top;
+
+    // pointer line
+    int ptrW = displayWidthUtf8(pointer);
+    int ptrSpaces = std::max(0, innerWidth - ptrW);
+    int ptrLeft  = ptrSpaces / 2;
+    int ptrRight = ptrSpaces - ptrLeft;
+
+    std::string pointerLine =
+        "| " + std::string(ptrLeft, ' ') + pointer +
+        std::string(ptrRight, ' ') + " |";
+
+    // row line
+    int rowW = displayWidthUtf8(rowPlain);
+    int rowSpaces = std::max(0, innerWidth - rowW);
+    int rowLeft  = rowSpaces / 2;
+    int rowRight = rowSpaces - rowLeft;
+
+    std::string rowLine =
+        "| " + std::string(rowLeft, ' ') + row +
+        std::string(rowRight, ' ') + " |";
+
+    std::string title = " ROULETTE WHEEL ";
+    int titleW = displayWidthUtf8(title);
+    int titleSpaces = std::max(0, innerWidth - titleW);
+    int titleLeft = titleSpaces / 2;
+    int titleRight = titleSpaces - titleLeft;
+
+    std::string titleLine =
+        "| " + std::string(titleLeft, ' ') + title +
+        std::string(titleRight, ' ') + " |";
+
+    // ===== render =====
+    std::cout << indent << top        << "\n";
+    std::cout << indent << titleLine  << "\n";
+    std::cout << indent << top        << "\n";
+    std::cout << indent << pointerLine<< "\n";
+    std::cout << indent << rowLine    << "\n";
+    std::cout << indent << bottom     << "\n";
 }
+std::string RoundUI::centerColored(const std::string& s, int termWidth) const {
+    int realWidth = displayWidthUtf8(s); // ignoring ANSI sequences
+    if (realWidth >= termWidth) return s;
+
+    int padding = (termWidth - realWidth) / 2;
+    return std::string(padding, ' ') + s;
+}
+
+std::string RoundUI::stripAnsi(const std::string& s) const {
+    std::string out;
+    out.reserve(s.size());
+
+    for (std::size_t i = 0; i < s.size(); ) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+
+        if (c == 0x1B && i + 1 < s.size() && s[i + 1] == '[') {
+            i += 2;
+            while (i < s.size() && s[i] != 'm') {
+                ++i;
+            }
+            if (i < s.size()) ++i;
+        } else {
+            out.push_back(s[i]);
+            ++i;
+        }
+    }
+
+    return out;
+}
+
 
 void RoundUI::pause(const int ms) {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));

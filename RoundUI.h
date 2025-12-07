@@ -14,8 +14,10 @@ class RoundUI {
     static std::string trim(std::string str);
     int consoleWidth() const;
     std::string centerText(const std::string& text, int width) const;
-
+    std::string centerColored(const std::string& s, int termWidth) const;
+    static std::string colorize(const std::string& text, const std::string& fg, const std::string& bg, bool bold);
     static void moveCursorToCenterRow();
+    std::string stripAnsi(const std::string& s) const;
     int displayWidthUtf8(const std::string& str) const;
 public:
     RoundUI();
