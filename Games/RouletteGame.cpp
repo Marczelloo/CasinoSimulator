@@ -280,7 +280,7 @@ int RouletteGame::renderInterface(const Player &player) {
 }
 
 GameState RouletteGame::playRound(Player &player) {
-    spunTile = -1;
+    spunTile = 0;
     lastScore = -1;
 
     int bet = askForBet(player);

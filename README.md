@@ -18,7 +18,8 @@ The project was created in **CLion** using **CMake** and **C++20** standard.
 ### Menus
 ![Main Menu](docs/images/main_menu.png)
 ![Player Creation](docs/images/player_creation.png)
-![Leaderboard](docs/images/leaderboard.png)
+![Leaderboard Menu](docs/images/leaderboard.png)
+![Leaderboard](docs/images/leaderboard_list.png)
 ![Casino Menu](docs/images/casino_main_menu.png)
 ![Game Selection](docs/images/game_selection_menu.png)
 

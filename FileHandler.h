@@ -71,6 +71,13 @@ public:
      * @return bool True if player exists, false otherwise
      */
     static bool playerExists(const std::string& playerName);
+
+    /**
+     * @brief Clears all entries from the leaderboard file
+     * @param filename Leaderboard file path (default: "leaderboard.txt")
+     * @return bool True if cleared successfully, false otherwise
+     */
+    static bool clearLeaderboard(const std::string& filename = "leaderboard.txt");
 };
 
 

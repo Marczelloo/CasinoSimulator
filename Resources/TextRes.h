@@ -28,6 +28,7 @@ namespace TextRes {
     const std::vector<std::string> MAIN_MENU_OPTIONS = {  ///< Main menu option texts
         "Create player",
         "Check leaderboard",
+        "Resume Current Player",
         "Exit",
     };
 
@@ -126,6 +127,14 @@ namespace TextRes {
         "SPLIT",
         "SURRENDER"
     };
+
+    const std::vector<std::string> LEADERBOARD_MENU_OPTIONS = {
+        "View Leaderboard",
+        "Clear Leaderboard",
+        "Back"
+    };
+
+    const std::string LEADERBOARD_MENU_TITLE = "LEADERBOARD MENU"; ///< Leaderboard menu title
 }
 
 #endif //KASYNO_TEXTRES_H

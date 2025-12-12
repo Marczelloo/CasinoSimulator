@@ -96,3 +96,16 @@ bool FileHandler::playerExists(const std::string& playerName) {
 
     return false;
 }
+
+bool FileHandler::clearLeaderboard(const std::string& filename) {
+    try {
+        std::ofstream file(filename, std::ios::trunc);
+        if (!file.is_open()) {
+            return false;
+        }
+        file.close();
+        return true;
+    } catch (const std::exception&) {
+        return false;
+    }
+}

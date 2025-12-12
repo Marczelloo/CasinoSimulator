@@ -91,7 +91,9 @@ public:
     CreatePlayerResult createPlayer();
 
     /**
-     * @brief Displays the leaderboard with top players
+     * @brief Displays and manages the leaderboard menu
+     *
+     * Allows viewing and clearing the leaderboard
      */
     void checkLeaderboard();
 

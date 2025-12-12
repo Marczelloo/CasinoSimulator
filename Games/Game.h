@@ -20,17 +20,6 @@
 #include "../Resources/Enums.h"
 #include "../Resources/TextRes.h"
 
-//GAME_MENU -> PETLA GRY -> GAME_MENU
-// playRound -> ask for bet -> game loop przerywany tylko koncem srodkow albo wybraniem opcji exit, return to main menu
-// | interfejs gry|
-// menu opcji gry (zmiana bettu, wyjscie do menu gry itp)
-
-// w grze mamy menu z opcjami gry, akcji gry, zmiany bettu, wybrania innej gry wyjscia itp
-// w slotsach np mozna dac opcje szybkiego bettowania 10, 20, 50 itp
-// w slotsach chce rowniez dodac zmiane ilosci lini i kolumn
-// w blackjacku mozna dac opcje double down, split itp
-// kazda gra ma swoj unikalny zestaw opcji ktore sa dostepne w trakcie rundy
-
 /**
  * @class Game
  * @brief Abstract base class defining the interface for all casino games

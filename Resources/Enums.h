@@ -32,6 +32,7 @@ enum class GameState {
 enum class MainMenuOptions {
     MENU_CREATE_PLAYER = 0,      ///< Create new player
     MENU_CHECK_LEADERBOARD,      ///< View leaderboard
+    MENU_RESUME_PLAYER,          ///< Resume existing player
     MENU_EXIT,                   ///< Exit application
 };
 
@@ -155,6 +156,10 @@ enum class BlackjackOptions {
     EXIT,                  ///< Exit application
 };
 
+/**
+ * @enum BlackjackRoundOptions
+ * @brief Options available during a blackjack round
+ */
 enum class BlackjackRoundOptions {
     HIT = 0,               ///< Take another card
     STAND,                 ///< End turn
@@ -163,6 +168,14 @@ enum class BlackjackRoundOptions {
     SURRENDER,            ///< Forfeit half bet and end round
 };
 
-
+/**
+ * @enum LeaderboardMenuOptions
+ * @brief Options available in leaderboard menu
+ */
+enum class LeaderboardMenuOptions {
+    LEADERBOARD_VIEW = 0, ///< View leaderboard entries
+    LEADERBOARD_CLEAR,   ///< Clear leaderboard entries
+    LEADERBOARD_BACK,    ///< Back to previous menu
+};
 
 #endif //KASYNO_ENUMS_H

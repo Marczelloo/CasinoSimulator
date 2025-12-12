@@ -66,18 +66,62 @@ void Casino::run() {
 
 GameState Casino::handleMainMenu() {
     RoundUI::clear();
+
+    std::vector<std::string> menuOptions = TextRes::MAIN_MENU_OPTIONS;
+
+    if (!player) {
+        menuOptions[2] = "Resume Current Player [NO PLAYER]";
+    } else {
+        menuOptions[2] = "Resume Current Player (" + player->getName() + ")";
+    }
+
     int option = ui.askChoice(TextRes::MAIN_MENU_TITLE, TextRes::MAIN_MENU_OPTIONS);
 
     switch (static_cast<MainMenuOptions>(option)) {
         case MainMenuOptions::MENU_CREATE_PLAYER: {
-            auto res = createPlayer();
-            if (res == CreatePlayerResult::Ok) return GameState::CASINO_MENU;
-            if (res == CreatePlayerResult::Retry) return GameState::MAIN_MENU;
-            return GameState::EXIT;
+            if (player) {
+                int confirm = ui.askChoice(
+                    "You already have a player. Creating a new one will save the current player's progress.",
+                    {"Continue", "Cancel"}
+                );
+
+                if (confirm != 0) {
+                    ui.print("Player creation cancelled.");
+                    ui.waitForEnter();
+                    return GameState::MAIN_MENU;
+                }
+
+                try {
+                    LeaderboardEntry entry{player->getName(), player->getBalance()};
+                    FileHandler::addEntry(entry);
+                    ui.print("Previous player saved to leaderboard.");
+                } catch (const std::exception& e) {
+                    ui.print("Warning: Failed to save previous player!");
+                }
+
+                ui.waitForEnter();
+            }
+
+            createPlayer();
+            return GameState::CASINO_MENU;
         }
         case MainMenuOptions::MENU_CHECK_LEADERBOARD:
             checkLeaderboard();
             return GameState::MAIN_MENU;
+        case MainMenuOptions::MENU_RESUME_PLAYER:
+
+            if (!player) {
+                std::vector<std::string> info;
+                info.emplace_back("No player to resume!");
+                info.emplace_back("Please create a new player first.");
+                ui.drawBox("ERROR", info);
+                ui.waitForEnter();
+                return GameState::MAIN_MENU;
+            }
+
+            ui.print("Resuming as " + player->getName() + "...");
+            ui.waitForEnter();
+            return GameState::CASINO_MENU;
         case MainMenuOptions::MENU_EXIT:
             exitCasino();
             return state;
@@ -146,18 +190,59 @@ CreatePlayerResult Casino::createPlayer() {
 }
 
 void Casino::checkLeaderboard() {
-    RoundUI::clear();
+    while (true) {
+        ui.clear();
 
-    try {
-        auto entries = FileHandler::loadLeaderboard("leaderboard.txt");
-        ui.leaderboard(TextRes::LEADERBOARD_TITLE, entries);
-    } catch (const std::exception& e) {
-        ui.print("Error loading leaderboard!");
-        ui.print(std::string("Details: ") + e.what());
+        int option = ui.askChoice(TextRes::LEADERBOARD_MENU_TITLE, TextRes::LEADERBOARD_MENU_OPTIONS);
+
+        switch (static_cast<LeaderboardMenuOptions>(option)) {
+            case LeaderboardMenuOptions::LEADERBOARD_VIEW: {
+                ui.clear();
+                try {
+                    auto entries = FileHandler::loadLeaderboard("leaderboard.txt");
+                    ui.leaderboard("LEADERBOARD", entries);
+                } catch (const std::exception& e) {
+                    ui.print("Error loading leaderboard!");
+                    ui.print(std::string("Details: ") + e.what());
+                }
+                ui.waitForEnter("Press ENTER to return");
+                break;
+            }
+
+            case LeaderboardMenuOptions::LEADERBOARD_CLEAR: {
+                int confirm = ui.askChoice(
+                    "Are you sure you want to clear the leaderboard?",
+                    {"Yes, clear it", "No, cancel"}
+                );
+
+                if (confirm == 0) {
+                    if (FileHandler::clearLeaderboard("leaderboard.txt")) {
+                        std::vector<std::string> info;
+                        info.emplace_back("Leaderboard cleared successfully!");
+                        ui.drawBox("SUCCESS", info);
+                    } else {
+                        std::vector<std::string> info;
+                        info.emplace_back("Failed to clear leaderboard!");
+                        ui.drawBox("ERROR", info);
+                    }
+                } else {
+                    ui.print("Clearing cancelled.");
+                }
+                ui.waitForEnter();
+                break;
+            }
+
+            case LeaderboardMenuOptions::LEADERBOARD_BACK:
+                return;
+
+            default:
+                ui.print("Invalid choice");
+                ui.waitForEnter();
+                break;
+        }
     }
-
-    ui.waitForEnter("Press ENTER to return");
 }
+
 
 void Casino::exitCasino() {
     if (state == GameState::EXIT) return;
@@ -194,6 +279,17 @@ GameState Casino::handleCasinoMenu() {
             checkLeaderboard();
             return GameState::CASINO_MENU;
         case CasinoOptions::CASINO_RETURN_TO_MAIN_MENU:
+            if (player) {
+                try {
+                    LeaderboardEntry entry{player->getName(), player->getBalance()};
+                    FileHandler::addEntry(entry);
+                    ui.print("Your progress has been saved!");
+                } catch (const std::exception& e) {
+                    ui.print("Warning: Failed to save progress!");
+                    ui.print(std::string("Details: ") + e.what());
+                }
+                ui.waitForEnter();
+            }
             return GameState::MAIN_MENU;
         case CasinoOptions::CASINO_EXIT:
             exitCasino();
@@ -246,6 +342,15 @@ GameState Casino::handleGameMenu() {
                 return game->playRound(*player);
             case GameMenuOptions::GAME_RETURN_TO_CASINO_MENU:
                 game.reset();
+
+                if (player) {
+                    try {
+                        LeaderboardEntry entry{player->getName(), player->getBalance()};
+                        FileHandler::addEntry(entry);
+                    } catch (const std::exception&) {
+                    }
+                }
+
                 return GameState::CASINO_MENU;
             case GameMenuOptions::GAME_EXIT:
                 exitCasino();

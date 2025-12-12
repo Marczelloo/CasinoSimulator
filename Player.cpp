@@ -22,8 +22,9 @@ Player::Player(const std::string& name, const int &balance)
 
     std::string trimmedName = name;
     trimmedName.erase(
-        std::remove_if(trimmedName.begin(), trimmedName.end(), ::isspace()),
-        trimmedName.end()
+        std::remove_if(trimmedName.begin(), trimmedName.end(),
+            [](unsigned char c) { return std::isspace(c); }),  // ✅ Lambda
+    trimmedName.end()
     );
 
     if (trimmedName.empty()) {
@@ -128,19 +129,19 @@ void Player::placeBet(int amount) {
     balance -= amount;
 }
 
-void Player::winBet(double multiplayer) {
+void Player::winBet(double multiplier) {
     if (currentBet <= 0) {
         throw std::logic_error("Player::winBet: no active bet to win");
     }
 
-    if (multiplayer <= 0.0) {
+    if (multiplier <= 0.0) {
         throw std::invalid_argument(
            "Player::winBet: multiplier (" + std::to_string(multiplier) +
            ") must be positive"
        );
     }
 
-    int payout = static_cast<int>(currentBet * multiplayer);
+    int payout = static_cast<int>(currentBet * multiplier);
 
     balance += payout;
 
